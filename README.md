@@ -122,12 +122,7 @@ We recommend using the latest nightly build of vLLM.
 
 ```bash
 # via Docker
-docker pull vllm/vllm-openai:nightly
-
-# or via pip (nightly wheels)
-pip install -U vllm --pre \
-  --index-url https://pypi.org/simple \
-  --extra-index-url https://wheels.vllm.ai/nightly
+docker pull vllm/vllm-openai:stepfun37
 ```
 
 2. Launch the server.
@@ -186,7 +181,7 @@ pip install -U vllm --pre \
 
 ```bash
 # via Docker
-docker pull lmsysorg/sglang:latest
+docker pull lmsysorg/sglang:dev-step-3.7-flash
 
 # or from source (pip)
 pip install "sglang[all] @ git+https://github.com/sgl-project/sglang.git"
