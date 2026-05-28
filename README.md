@@ -1,5 +1,6 @@
 # Step 3.7 Flash
 
+
 ## 1. Introduction
 
 Step 3.7 Flash is a 198B-parameter sparse Mixture-of-Experts (MoE) vision-language model that combines a 196B-parameter language backbone with a 1.8B-parameter vision encoder for native image understanding. Engineered for high-frequency production workloads, it activates approximately 11B parameters per token and delivers a throughput of up to 400 tokens per second. Step 3.7 Flash supports a 256k context window and offers three selectable reasoning levels (low, medium, and high) so developers can easily balance speed, cost, and cognitive depth.
@@ -18,7 +19,7 @@ Execution reliability is critical for autonomous agents. Step 3.7 Flash leads th
 
 ### Code Engineering and Professional Baselines
 
-Step 3.7 Flash is built for live engineering tasks and secured a definitive second-place finish on SWE-Bench PRO with a score of 56.3. It can independently trace multi-file repositories, isolate bugs from raw issue reports, and generate functional patches that pass automated unit tests. While evaluations like Terminal-Bench 2.1 (59.5) and GPDVal (45.8) show clear areas for future optimization compared to the absolute peak of the cohort, they establish a dependable baseline for system interactions and structured professional deliverables.
+Step 3.7 Flash is built for live engineering tasks and secured a definitive second-place finish on SWE-Bench PRO with a score of 56.3. It can independently trace multi-file repositories, isolate bugs from raw issue reports, and generate functional patches that pass automated unit tests. While evaluations like Terminal-Bench 2.1 (59.5) and GPDVal-AA (45.8) show clear areas for future optimization compared to the absolute peak of the cohort, they establish a dependable baseline for system interactions and structured professional deliverables.
 
 ![Step 3.7 Flash benchmark results across General Agent, Agentic Coding, and Multimodal evaluations](assets/benchmarks.png)
 
@@ -31,7 +32,7 @@ Step 3.7 Flash is built for live engineering tasks and secured a definitive seco
 | Output | $1.15 / M tokens |
 
 ## 4. Availability, Deployment, and Ecosystem
-- Availability: Step 3.7 Flash is available through StepFun Open Platform — [platform.stepfun.ai](https://platform.stepfun.ai) (Global) and [platform.stepfun.com](https://platform.stepfun.com) (China) — as well as partner platforms including OpenRouter and NVIDIA NIM.
+- Availability: Step 3.7 Flash is available through StepFun Open Platform — [platform.stepfun.ai](https://platform.stepfun.ai) (Global) and [platform.stepfun.com](https://platform.stepfun.com) (China) — as well as partner platforms including OpenRouter and NVIDIA NIM. StepFun is also partnering with DeepInfra, Fireworks AI, and Modal Labs to expand availability soon.
 - Deployment: Step 3.7 Flash supports flexible deployment across cloud, data center, and local environments. For large-scale production and enterprise use cases, Step 3.7 Flash can be deployed on modern data center infrastructure. For local and workstation scenarios, it can also run on high-memory devices such as NVIDIA DGX Station, AMD Ryzen AI Max+ 395-based systems, and Mac Studio / Macbook Pro devices with at least 128GB unified memory.
 - Ecosystem: Step 3.7 Flash is supported across popular open-source infrastructure for both inference and model development. For inference and serving, developers can use vLLM, SGLang, Hugging Face Transformers, and llama.cpp. For model development workflows, StepFun model support has landed in the NVIDIA Megatron ecosystem, including Megatron Core and Megatron Bridge.
 
@@ -133,20 +134,7 @@ pip install -U vllm --pre \
 
 2. Launch the server.
 
-  - For fp8 model
-  ```bash
-  vllm serve <MODEL_PATH_OR_HF_ID> \
-  --served-model-name step3p7-flash-fp8 \
-  --tensor-parallel-size 8 \
-  --enable-expert-parallel \
-  --disable-cascade-attn \
-  --reasoning-parser step3p5 \
-  --enable-auto-tool-choice \
-  --tool-call-parser step3p5 \
-  --speculative_config '{"method": "mtp", "num_speculative_tokens": 3}' \
-  --trust-remote-code
-  ```
-  - For bf16 model
+  - For FP8 model
   ```bash
   vllm serve <MODEL_PATH_OR_HF_ID> \
   --served-model-name step3p7-flash \
@@ -159,8 +147,21 @@ pip install -U vllm --pre \
   --speculative_config '{"method": "mtp", "num_speculative_tokens": 3}' \
   --trust-remote-code
   ```
+  - For BF16 model
+  ```bash
+  vllm serve <MODEL_PATH_OR_HF_ID> \
+  --served-model-name step3p7-flash-bf16 \
+  --tensor-parallel-size 8 \
+  --enable-expert-parallel \
+  --disable-cascade-attn \
+  --reasoning-parser step3p5 \
+  --enable-auto-tool-choice \
+  --tool-call-parser step3p5 \
+  --speculative_config '{"method": "mtp", "num_speculative_tokens": 3}' \
+  --trust-remote-code
+  ```
 
-  - For nvfp4 model
+  - For NVFP4 model
   Compared to standard precisions, running the FP4 quantized version requires modelopt activation and FP8 KV Cache alignment.
   ```bash
   python3 -m vllm.entrypoints.openai.api_server \
@@ -197,7 +198,7 @@ pip install "sglang[all] @ git+https://github.com/sgl-project/sglang.git"
 
 > **Note:** For Blackwell GPUs, `--mm-attention-backend fa4` may be used.
 
-- For bf16 model
+- For BF16 model
 
 ```bash
 sglang serve --model-path stepfun-ai/Step-3.7-Flash \
@@ -215,7 +216,7 @@ sglang serve --model-path stepfun-ai/Step-3.7-Flash \
   --port 8000
 ```
 
-- For fp8 model
+- For FP8 model
 
 ```bash
 sglang serve --model-path stepfun-ai/Step-3.7-Flash-fp8 \
@@ -232,6 +233,20 @@ sglang serve --model-path stepfun-ai/Step-3.7-Flash-fp8 \
   --trust-remote-code \
   --host 0.0.0.0 \
   --port 8000
+```
+
+- For NVFP4 model
+
+```bash
+sglang serve --model-path stepfun-ai/Step-3.7-Flash-NVFP4 \
+  --tp 4 --ep 4 \
+  --moe-runner-backend flashinfer_trtllm \
+  --kv-cache-dtype fp8_e4m3 \
+  --quantization modelopt_fp4 \
+  --trust-remote-code \
+  --reasoning-parser step3p5 \
+  --tool-call-parser step3p5 \
+  --attention-backend trtllm_mha
 ```
 
 ### 6.3 Transformers (Debug / Verification)
@@ -367,7 +382,7 @@ cmake --build build-vulkan -j8
 
 ## 7. Using Step 3.7 Flash on Agent Platforms
 
-You can use Step 3.7 Flash on Agent platforms such as Hermes Agent, Lemonade, OpenClaw, Kilo Code, and more.
+You can use Step 3.7 Flash on Agent platforms such as Hermes Agent, OpenClaw, Kilo Code, and more.
 
 ## 8. Getting in Touch
 
@@ -375,4 +390,8 @@ As we work to shape the future of AGI by expanding broad model capabilities, we 
 
 - **Join the Conversation:** Our [Discord](https://discord.gg/RcMJhNVAQc) community is the primary hub for brainstorming future architectures, proposing capabilities, and getting early access updates 🚀
 - **Report Friction:** Encountering limitations? You can open an issue or start a discussion on GitHub / HuggingFace, or flag it directly in our Discord support channels.
+
+## 📄 License
+
+This project is open-sourced under the [Apache 2.0 License](https://www.apache.org/licenses/LICENSE-2.0).
 
