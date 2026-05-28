@@ -116,7 +116,7 @@ Step 3.7 Flash is optimized for local inference and supports industry-standard b
 
 ### 6.1 vLLM
 
-We recommend using the latest nightly build of vLLM.
+We recommend using StepFun's prebuilt vLLM Docker image with Step 3.7 support.
 
 1. Install vLLM.
 
