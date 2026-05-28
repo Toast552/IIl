@@ -1,14 +1,4 @@
----
-license: apache-2.0
-library_name: transformers
-pipeline_tag: image-text-to-text
-language:
-  - en
-tags:
-  - vision-language
-  - multimodal
-  - moe
----
+# Step 3.7 Flash
 
 ## 1. Introduction
 
