@@ -218,7 +218,7 @@ sglang serve --model-path stepfun-ai/Step-3.7-Flash \
 - For FP8 model
 
 ```bash
-sglang serve --model-path stepfun-ai/Step-3.7-Flash-fp8 \
+sglang serve --model-path stepfun-ai/Step-3.7-Flash-FP8 \
   --tp 8 \
   --ep 4 \
   --reasoning-parser step3p5 \
