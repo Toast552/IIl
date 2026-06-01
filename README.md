@@ -29,6 +29,26 @@ Step 3.7 Flash is built for live engineering tasks and secured a definitive seco
 
 ![Step 3.7 Flash benchmark results across General Agent, Agentic Coding, and Multimodal evaluations](assets/benchmarks.png)
 
+### NVFP4 + MTP
+
+Step 3.7 Flash is also available in an NVFP4-quantized variant for efficient deployment on NVIDIA GPUs. The latest [NVFP4 checkpoint](https://huggingface.co/stepfun-ai/Step-3.7-Flash-NVFP4) includes MTP draft layers and supports vLLM speculative decoding with:
+
+```bash
+--speculative-config '{"method": "mtp", "num_speculative_tokens": 3}'
+```
+
+On GPQA Diamond avg@16, the NVFP4 + MTP checkpoint matches quality within statistical noise compared with the same NVFP4 checkpoint without MTP: **77.81% vs. 78.41%** item accuracy over 3168 records.
+
+On a GB200 TP=4 vLLM setup with GPQA-style long-reasoning streaming prompts (~250 token prompt, ~1.6K token completion), NVFP4 + MTP improves aggregate decode throughput:
+
+| Concurrency | NVFP4 + MTP | NVFP4 no-MTP | Speedup |
+|---:|---:|---:|---:|
+| 8 | 1309 tok/s | 1155 tok/s | 1.13x |
+| 32 | 4391 tok/s | 3480 tok/s | 1.26x |
+| **64** | **8229 tok/s** | 5667 tok/s | **1.45x** |
+
+This makes the NVFP4 checkpoint a practical option for high-throughput long-reasoning workloads. This benchmark characterizes short-prompt, decode-heavy reasoning rather than long-context prefill performance.
+
 ## 3. Pricing
 
 | Token Type | Price |
@@ -143,7 +163,7 @@ docker pull vllm/vllm-openai:stepfun37
   --reasoning-parser step3p5 \
   --enable-auto-tool-choice \
   --tool-call-parser step3p5 \
-  --speculative_config '{"method": "mtp", "num_speculative_tokens": 3}' \
+  --speculative-config '{"method": "mtp", "num_speculative_tokens": 3}' \
   --trust-remote-code
   ```
   - For BF16 model
@@ -156,7 +176,7 @@ docker pull vllm/vllm-openai:stepfun37
   --reasoning-parser step3p5 \
   --enable-auto-tool-choice \
   --tool-call-parser step3p5 \
-  --speculative_config '{"method": "mtp", "num_speculative_tokens": 3}' \
+  --speculative-config '{"method": "mtp", "num_speculative_tokens": 3}' \
   --trust-remote-code
   ```
 
@@ -178,7 +198,8 @@ docker pull vllm/vllm-openai:stepfun37
   --reasoning-parser step3p5 \
   --enable-auto-tool-choice \
   --tool-call-parser step3p5 \
-  --async-scheduling
+  --async-scheduling \
+  --speculative-config '{"method": "mtp", "num_speculative_tokens": 3}'
   ```
 
 ### 6.2 SGLang
@@ -393,4 +414,3 @@ As we work to shape the future of AGI by expanding broad model capabilities, we 
 ## 📄 License
 
 This project is open-sourced under the [Apache 2.0 License](https://www.apache.org/licenses/LICENSE-2.0).
-
